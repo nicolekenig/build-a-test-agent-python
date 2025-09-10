@@ -14,7 +14,27 @@ class APIAnalysisAgent:
     def __init__(self, api_key):
         self.client = genai.Client(api_key=api_key)
         self.model_name = GEMINI_MODEL_NAME
-        self.config = types.GenerateContentConfig(max_output_tokens=100)
+        self.config = types.GenerateContentConfig(max_output_tokens=200)
+
+
+    def think(self, question):
+        """Ask the AI to think about something"""
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text = "You are a helpful API testing assistant.")]
+                ),
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text = question)]
+                )
+            ],
+            config=self.config
+        )
+        return response.text
+
 
     def analyze_api_endpoint(self, endpoint_info):
         """
@@ -33,7 +53,7 @@ class APIAnalysisAgent:
         3. Common use cases
         4. Potential issues to test for
 
-        Keep response under 150 words.
+        Keep response under 50 words.
         """
         response = self.client.models.generate_content(
             model=self.model_name,
@@ -56,18 +76,17 @@ class APIAnalysisAgent:
         TODO: Generate testing suggestions for an endpoint
 
         Args:
-            endpoint_info: Dict with endpoint details
+            endpoint_info: Dict with endpoint details: 'method', 'path', 'description'
 
         Returns:
             List of testing suggestions
         """
         # TODO: Create prompt for test suggestions
-        prompt = f"""
-
-                """
+        prompt = f"Generate testing suggestions for this endpoint: {endpoint_info["method"], endpoint_info["path"], endpoint_info["description"]}. Keep response under 150 words"
 
         # TODO: Call the model and return suggestions as list
-        return ["TODO: Implement testing suggestions"]
+        response = self.think(prompt)
+        return [response]
 
 
 def main():
