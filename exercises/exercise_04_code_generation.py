@@ -25,6 +25,7 @@ class TestCodeGenerator:
         Returns:
             String containing executable Python code
         """
+
         # TODO: Create prompt for code generation
         # Include requirements:
         # - Use requests library
@@ -32,13 +33,29 @@ class TestCodeGenerator:
         # - Handle errors
         # - Return results
 
-        prompt = f"""
-        
-        """
 
         # TODO: Call the model and extract code from re
-
-        return "# TODO: Implement code generation"
+        prompt = f"""
+                        Generate a Python test function according to the following description'.
+                        Return ONLY the function code, no explanation.
+                        create prompt for code generation.
+                        Include requirements:
+                         - Use requests library
+                         - Include assertions
+                         - Handle errors
+                         - Return results
+                        """
+        endpoint_data = f'{endpoint_info["method"], endpoint_info["path"], endpoint_info["description"], endpoint_info["base_url"]}'
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[
+                types.Content(role="user", parts=[types.Part.from_text(text=prompt)]),
+                types.Content(role="user", parts=[types.Part.from_text(text=test_description)]),
+                types.Content(role="user", parts=[types.Part.from_text(text=endpoint_data)]),
+            ],
+            config=self.config
+        )
+        return response
 
 
 def main():
