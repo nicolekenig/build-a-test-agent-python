@@ -8,12 +8,30 @@ from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL_NAME
 from utils.sample_apis import get_sample_api
 
-
 class APIAnalyzer:
     def __init__(self, api_key):
         self.client = genai.Client(api_key=api_key)
         self.model_name = GEMINI_MODEL_NAME
-        self.config = types.GenerateContentConfig(max_output_tokens=100)
+        self.config = types.GenerateContentConfig(max_output_tokens=200)
+
+
+    def think(self, question):
+        """Ask the AI to think about something"""
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text = "You are a helpful API testing assistant.")]
+                ),
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text = question)]
+                )
+            ],
+            config=self.config
+        )
+        return response.text
 
     def analyze_api_endpoint(self, endpoint_info):
         """
@@ -28,13 +46,14 @@ class APIAnalyzer:
         # HINT: Create a prompt that asks the AI to analyze the endpoint
         # Consider what kind of testing might be needed
 
+        question = f"analyze and return only one prompt that i should ask for the given method: {endpoint_info["method"], endpoint_info["path"], endpoint_info["description"]} ?"
+        prompt = self.think(question)
+        print(f"Prompt: {prompt}. **shor response. max tokens of 100**")
         # TODO: Add your analysis prompt here
-        prompt = f"""
-            
-        """
+        response = self.think(prompt)
 
         # TODO: Call the model and return the response
-        return "TODO: Implement API analysis"
+        return response
 
 
 
@@ -53,7 +72,7 @@ def main():
 
     # TODO: Analyze the endpoint
     analysis = agent.analyze_api_endpoint(endpoint)
-    print(f"\nAnalysis: {analysis}")
+    print(f"Analysis: {analysis}")
 
 
 
